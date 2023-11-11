@@ -24,4 +24,4 @@ docker build -t previewer .
 docker run -v `pwd`/src:/usr/src/app previewer go run src/main.go -src "examples/images" -templates "examples"
 ```
 
-![example-big.png](example/images/example-big.png)
+![example-big.png](example/images/example-big.jpg)
