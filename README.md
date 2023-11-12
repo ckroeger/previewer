@@ -11,17 +11,18 @@ go run src/main.go -src "path/to/images" -templates "path/to/templates"
 ```
 ## Run with docker
 ```shell
-docker run -v your/path/to/imagesrc:/app/src -v your/path/to/templates:/app/templates ghcr.io/s-frick/previewer:1.0.1
+docker run -v your/path/to/imagesrc:/app/src -v your/path/to/templates:/app/templates ghcr.io/ckroeger/previewer:1.0.1
 ```
 
-## Build docker image
+## Build docker image (locally)
 ```shell
 docker build -t previewer .
 ```
 
-## Run it in docker
+## Run it in docker (locally)
 ```shell
-docker run -v `pwd`/src:/usr/src/app previewer go run src/main.go -src "examples/images" -templates "examples"
+docker run -it -v `pwd`:/app previewer /app/app -src "example/images"
 ```
 
+# Example Image
 ![example-big.png](example/images/example-big.jpg)
