@@ -1,14 +1,21 @@
-FROM alpine:3.9 
-RUN apk add ca-certificates
+FROM golang:1.21 AS base
 
-WORKDIR /app
-RUN mkdir src
-RUN mkdir templates
+RUN adduser \
+  --disabled-password \
+  --gecos "" \
+  --home "/nonexistent" \
+  --shell "/sbin/nologin" \
+  --no-create-home \
+  --uid 65532 \
+  small-user
 
-COPY app .
-COPY entrypoint.sh .
+WORKDIR $GOPATH/src/smallest-golang/app/
 
-EXPOSE 5149
+COPY . .
 
-# CMD ["/app/app", "-src \"/app/src\"", "-templates \"/app/templates\""]
-ENTRYPOINT ["/app/entrypoint.sh"]
+RUN go mod download && go mod verify && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /app ./...
+FROM gcr.io/distroless/static-debian11@sha256:d49f214e6f1bae819e24f651156552b073725592cae128a66eade0c6280f02e1
+
+WORKDIR /app/
+COPY  --chmod=0644 --from=base app .
+CMD ["./app/app"]
