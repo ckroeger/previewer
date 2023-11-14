@@ -53,8 +53,8 @@ func main() {
 	items := findImages(srcDir)
 	resizedImg := resizeImages(items, outDir)
 	if templateDir != "" {
-        tpls := findTemplates(templateDir)
-        renderTemplates(tpls, resizedImg)
+		tpls := findTemplates(templateDir)
+		renderTemplates(tpls, resizedImg)
 	}
 }
 
@@ -68,6 +68,11 @@ func findTemplates(templateDir string) []Tpl {
 		if !d.IsDir() {
 			if strings.Contains(path, ".tpl") {
 				renderPath := strings.Replace(path, ".tpl", "", 1)
+				/*
+					.FuncMap{
+							"": func(i, j int) int { return i+j },
+						}
+				*/
 				tpl, err := template.ParseFiles(path)
 				if err != nil {
 					return err
@@ -125,7 +130,7 @@ func resizeImages(items []Img, targetPath string) []Image {
 		// maxWidth maxHeigth
 
 		newFilename, absPathOut := resizeImage(item, targetPath)
-        log.Printf("targetPath -> %v", targetPath)
+		log.Printf("targetPath -> %v", targetPath)
 		resizedImg = append(resizedImg, Image{Origin: item, Resized: Img{AbsPath: absPathOut, RelPath: item.RelPath, Filename: newFilename}})
 	}
 	return resizedImg
@@ -138,13 +143,13 @@ func resizeImage(item Img, targetPath string) (string, string) {
 	}
 	defer input.Close()
 
-/*
-	targetDir := fmt.Sprintf("%s/%s", targetPath, item.RelPath)
-	if err := os.MkdirAll(targetDir, 0777); err != nil {
-		log.Println(err)
-	}
-	log.Printf(targetDir)
-*/
+	/*
+		targetDir := fmt.Sprintf("%s/%s", targetPath, item.RelPath)
+		if err := os.MkdirAll(targetDir, 0777); err != nil {
+			log.Println(err)
+		}
+		log.Printf(targetDir)
+	*/
 	newFilename := strings.Replace(item.Filename, ".jpg", "__th__.jpg", 1)
 	log.Println(newFilename)
 	absPathOut := fmt.Sprintf("%s/%s", targetPath, newFilename)
@@ -159,7 +164,7 @@ func resizeImage(item Img, targetPath string) (string, string) {
 		log.Printf("image is not a jpeg, %v", err)
 	}
 
-	dst := image.NewRGBA(image.Rect(0, 0, 160, 160))
+	dst := image.NewRGBA(image.Rect(0, 0, 320, 320))
 
 	draw.ApproxBiLinear.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
 

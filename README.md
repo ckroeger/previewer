@@ -25,4 +25,4 @@ docker run -it -v `pwd`:/app previewer /app/app -src "example/images"
 ```
 
 # Example Image
-![example-big.png](example/images/example-big.jpg)
+![example-big.png](example/images/example-big_1.jpg)
