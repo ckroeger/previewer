@@ -53,8 +53,8 @@ func main() {
 	items := findImages(srcDir)
 	resizedImg := resizeImages(items, outDir)
 	if templateDir != "" {
-        tpls := findTemplates(templateDir)
-        renderTemplates(tpls, resizedImg)
+		tpls := findTemplates(templateDir)
+		renderTemplates(tpls, resizedImg)
 	}
 }
 
@@ -98,6 +98,15 @@ func renderTemplates(tpls []Tpl, imgs []Image) {
 	}
 }
 
+func substringBeforeLast(inputString, delimiter string) string {
+	delimiterIndex := strings.LastIndex(inputString, delimiter)
+	if delimiterIndex != -1 {
+		result := inputString[:delimiterIndex]
+		return result
+	}
+	return inputString
+}
+
 func findImages(srcDir string) []Img {
 	var items []Img
 
@@ -105,7 +114,9 @@ func findImages(srcDir string) []Img {
 		if err != nil {
 			return err
 		}
-		if !d.IsDir() && !strings.Contains(d.Name(), "__th__") {
+		if !d.IsDir() &&
+			strings.HasSuffix(d.Name(), "jpg") &&
+			!strings.Contains(d.Name(), "__th__") {
 			relPath := strings.Replace(path, srcDir+"/", "", 1)
 			relDir := strings.Replace(relPath, "/"+d.Name(), "", 1)
 			log.Printf("-> %v", d.Name())
@@ -124,8 +135,8 @@ func resizeImages(items []Img, targetPath string) []Image {
 	for _, item := range items {
 		// maxWidth maxHeigth
 
-		newFilename, absPathOut := resizeImage(item, targetPath)
-        log.Printf("targetPath -> %v", targetPath)
+		newFilename, absPathOut := resizeImage(item, item.RelPath)
+		log.Printf("targetPath -> %v", targetPath)
 		resizedImg = append(resizedImg, Image{Origin: item, Resized: Img{AbsPath: absPathOut, RelPath: item.RelPath, Filename: newFilename}})
 	}
 	return resizedImg
@@ -138,16 +149,19 @@ func resizeImage(item Img, targetPath string) (string, string) {
 	}
 	defer input.Close()
 
-/*
-	targetDir := fmt.Sprintf("%s/%s", targetPath, item.RelPath)
-	if err := os.MkdirAll(targetDir, 0777); err != nil {
-		log.Println(err)
-	}
-	log.Printf(targetDir)
-*/
+	/*
+		targetDir := fmt.Sprintf("%s/%s", targetPath, item.RelPath)
+		if err := os.MkdirAll(targetDir, 0777); err != nil {
+			log.Println(err)
+		}
+		log.Printf(targetDir)
+	*/
 	newFilename := strings.Replace(item.Filename, ".jpg", "__th__.jpg", 1)
 	log.Println(newFilename)
-	absPathOut := fmt.Sprintf("%s/%s", targetPath, newFilename)
+	absPathOut := fmt.Sprintf("%s/%s", substringBeforeLast(item.AbsPath, "/"), newFilename)
+	// log.Println("----")
+	// log.Println(item.AbsPath)
+	// log.Println(absPathOut)
 	output, err := os.Create(absPathOut)
 	if err != nil {
 		log.Println(err)
@@ -159,10 +173,17 @@ func resizeImage(item Img, targetPath string) (string, string) {
 		log.Printf("image is not a jpeg, %v", err)
 	}
 
-	dst := image.NewRGBA(image.Rect(0, 0, 160, 160))
+	newWidth, newHeight := rescale(src.Bounds().Dx(), src.Bounds().Dy(), 320)
+	dst := image.NewRGBA(image.Rect(0, 0, newWidth, newHeight))
 
 	draw.ApproxBiLinear.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
 
 	jpeg.Encode(output, dst, nil)
 	return newFilename, absPathOut
+}
+
+func rescale(width, height, newWidth int) (int, int) {
+	scaleFactor := float64(newWidth) / float64(width)
+	newHeight := int(float64(height) * scaleFactor)
+	return newWidth, newHeight
 }

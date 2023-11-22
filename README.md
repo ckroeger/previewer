@@ -26,3 +26,7 @@ docker run -it -v `pwd`:/app previewer /app/app -src "example/images"
 
 # Example Image
 ![example-big.png](example/images/example-big.jpg)
+
+````shell
+go get -u golang.org/x/image/...
+````
