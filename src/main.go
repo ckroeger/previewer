@@ -94,7 +94,12 @@ func renderTemplates(tpls []Tpl, imgs []Image) {
 		if err != nil {
 			log.Println(err)
 		}
-		defer output.Close()
+		defer func(output *os.File) {
+			err := output.Close()
+			if err != nil {
+				log.Println(err)
+			}
+		}(output)
 
 		if err := tpl.template.Execute(output, imgs); err != nil {
 			log.Printf("error while render template: %v", err)
